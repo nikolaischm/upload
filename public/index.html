@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datei Explorer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .directory, .file {
+            margin-left: 20px;
+        }
+        .folder-name {
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Datei Explorer</h1>
+    <div id="file-explorer"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetch('/dir_structure.json') // Pfad zur JSON-Datei anpassen, basierend auf Ihrer Netlify-URL
+                .then(response => response.json())
+                .then(data => {
+                    const explorer = document.getElementById('file-explorer');
+                    buildFileExplorer(data, explorer);
+                });
+
+            function buildFileExplorer(structure, container) {
+                for (const [name, content] of Object.entries(structure)) {
+                    const item = document.createElement('div');
+                    item.classList.add(content ? 'directory' : 'file');
+
+                    const itemName = document.createElement('div');
+                    itemName.textContent = name;
+
+                    if (content) {
+                        itemName.classList.add('folder-name');
+                        itemName.addEventListener('click', () => {
+                            const isVisible = item.lastElementChild.style.display === 'block';
+                            item.lastElementChild.style.display = isVisible ? 'none' : 'block';
+                        });
+
+                        const subContainer = document.createElement('div');
+                        subContainer.style.display = 'none';
+                        buildFileExplorer(content, subContainer);
+                        item.appendChild(itemName);
+                        item.appendChild(subContainer);
+                    } else {
+                        itemName.classList.add('file-name');
+                        itemName.addEventListener('click', () => {
+                            window.location.href = `/${name}`;
+                        });
+                        item.appendChild(itemName);
+                    }
+
+                    container.appendChild(item);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
